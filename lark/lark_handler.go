@@ -62,11 +62,3 @@ func (e *LarkHandler) SendMessage(event *larkim.P2MessageReceiveV1, msgType, msg
 		return e.Bot.SendReplyReqMessage(*event.Event.Message.MessageId, msgType, msg)
 	}
 }
-
-func (e *LarkHandler) MsgMake(event *larkim.P2MessageReceiveV1, msgType, msg string) error {
-	if *event.Event.Message.ChatType == "p2p" {
-		return e.Bot.SendP2PReqMessage(*event.Event.Message.ChatId, msgType, msg)
-	} else {
-		return e.Bot.SendReplyReqMessage(*event.Event.Message.MessageId, msgType, msg)
-	}
-}
