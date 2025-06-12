@@ -4,34 +4,31 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
 )
 
 type LarkBotConfig struct {
-	// 应用APP ID
-	AppId string
-	// 应用APP Secret
-	AppSecret string
-	// 日志级别
-	// LogLevelDebug LogLevel = 1 ;
-	// LogLevelInfo  LogLevel = 2 ;
-	// LogLevelWarn  LogLevel = 3 ;
-	// LogLevelError LogLevel = 4 ;;
-	LogLevel int
-	// 用于加密事件或回调的请求内容，校验请求来源
-	VerificationToken string
-	// 用于加密事件或回调的请求内容，用于解密请求内容
-	EncryptKey string
+	AppId             string `yaml:"AppId"`
+	AppSecret         string `yaml:"AppSecret"`
+	LogLevel          int    `yaml:"LogLevel"`
+	VerificationToken string `yaml:"VerificationToken"`
+	EncryptKey        string `yaml:"EncryptKey"`
 }
 
-var GlobalConfig *LarkBotConfig
+// 全局配置对象
+var GlobalConfig *LarkBotConfig = &LarkBotConfig{}
 
+// 初始化配置
 func ConfigInit(configPath string) error {
-	content, _ := ioutil.ReadFile(configPath)
-	err := yaml.Unmarshal(content, GlobalConfig)
+	content, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.Println("[config] [yaml]", err.Error())
+		return fmt.Errorf("[config] 读取配置文件失败: %v", err)
 	}
-	fmt.Printf("%+v\n", GlobalConfig)
+
+	err = yaml.Unmarshal(content, GlobalConfig)
+	if err != nil {
+		return fmt.Errorf("[config] YAML 解析失败: %v", err)
+	}
+
+	fmt.Printf("✅ 配置加载成功：AppId = %s\n", GlobalConfig.AppId)
 	return nil
 }

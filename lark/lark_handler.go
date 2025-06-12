@@ -51,6 +51,7 @@ func (e *LarkHandler) OnP2MessageReceiveV1(ctx context.Context, event *larkim.P2
 	}
 	reqText := respContent["text"]
 	fmt.Printf("[OnP2MessageReceiveV1 access], data: %v\n", reqText)
+	e.SendMessage(event, larkim.MsgTypeText, reqText)
 	return nil
 }
 
