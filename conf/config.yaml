@@ -1,0 +1,5 @@
+LarkAppConfig:
+  AppId: cli_XXXX
+  AppSecret: XXX
+  EncryptKey: XXX
+  VerificationToken: XXXX
