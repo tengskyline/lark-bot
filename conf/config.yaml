@@ -3,3 +3,4 @@ AppSecret: "XXXXXXXXXXXXXXXXXXXX"
 LogLevel: 2
 VerificationToken: ""
 EncryptKey: ""
+QwenKey: ""

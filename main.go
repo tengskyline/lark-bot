@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/tengskyline/lark-bot/conf"
 	"github.com/tengskyline/lark-bot/lark"
+	"github.com/tengskyline/lark-bot/qwencli"
 	"log"
 )
 
@@ -20,6 +21,7 @@ func main() {
 	eventHandler := lark.NewLarkHandler()
 	app := lark.NewLark(eventHandler, conf.GlobalConfig)
 	eventHandler.Bot = app
+	eventHandler.QClinet = qwencli.NewClient(conf.GlobalConfig.QwenKey, "")
 	err = app.Start()
 	log.Println(err)
 }

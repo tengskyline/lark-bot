@@ -7,13 +7,15 @@ import (
 	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 	"github.com/patrickmn/go-cache"
+	"github.com/tengskyline/lark-bot/qwencli"
 	"time"
 )
 
 var eventCache = cache.New(5*time.Minute, 10*time.Minute)
 
 type LarkHandler struct {
-	Bot *LarkBot
+	Bot     *LarkBot
+	QClinet *qwencli.QwenClient
 }
 
 func NewLarkHandler() *LarkHandler {
@@ -27,7 +29,11 @@ func (e *LarkHandler) EventCheck(eventId string) bool {
 	eventCache.Set(eventId, true, cache.DefaultExpiration)
 	return true
 }
-
+func (e *LarkHandler) OnP2MessageReadV1(ctx context.Context, event *larkim.P2MessageReadV1) error {
+	// 你可以留空，或者写日志
+	fmt.Printf("收到 message_read 事件, 消息已读\n")
+	return nil
+}
 func (e *LarkHandler) OnP2MessageReceiveV1(ctx context.Context, event *larkim.P2MessageReceiveV1) error {
 	// 处理消息 event，这里简单打印消息的内容
 	fmt.Printf("[OnP2MessageReceiveV1 access], data: %s\n", larkcore.Prettify(event))
@@ -50,8 +56,19 @@ func (e *LarkHandler) OnP2MessageReceiveV1(ctx context.Context, event *larkim.P2
 		return e.SendMessage(event, larkim.MsgTypeText, "解析消息失败，请发送文本消息\n")
 	}
 	reqText := respContent["text"]
-	fmt.Printf("[OnP2MessageReceiveV1 access], data: %v\n", reqText)
-	e.SendMessage(event, larkim.MsgTypeText, reqText)
+	chunks := make([]string, 0, 0)
+	cardId := e.Bot.CreateNewCard(context.TODO())
+	e.SendMessage(event, larkim.MsgTypeInteractive, cardId)
+	e.QClinet.Chat(reqText, func(ctx context.Context, chunk []byte) error {
+		if len(chunk) == 0 {
+			return nil
+		}
+		chunks = append(chunks, string(chunk))
+		return nil
+	})
+	fmt.Printf("[OnP2MessageReceiveV1 access], reqText: %v\n", reqText)
+	fmt.Printf("[OnP2MessageReceiveV1 access], chat: %+v\n", chunks)
+	e.Bot.UpdateCardChat(context.TODO(), cardId, chunks)
 	return nil
 }
 

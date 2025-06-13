@@ -16,3 +16,6 @@ vendor/
 # OS files
 .DS_Store
 Thumbs.db
+server.yaml
+.gitignore
+

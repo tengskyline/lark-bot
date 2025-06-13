@@ -12,6 +12,7 @@ type LarkBotConfig struct {
 	LogLevel          int    `yaml:"LogLevel"`
 	VerificationToken string `yaml:"VerificationToken"`
 	EncryptKey        string `yaml:"EncryptKey"`
+	QwenKey           string `yaml:"QwenKey"`
 }
 
 // 全局配置对象
