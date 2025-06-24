@@ -34,11 +34,9 @@ cd lark-bot
 
 #### 2. 配置 AI 服务
 ```bash
-# 复制配置文件
-cp config/openai.yaml config/openai.yaml.local
-
-# 编辑配置，填入 API 密钥
-vim config/openai.yaml.local
+# 设置环境变量
+export LARK_BOT_OPENAI_API_KEY="your-openai-api-key-here"
+export LARK_BOT_OPENAI_MODEL="gpt-4o-mini"
 ```
 
 #### 3. 运行程序
@@ -66,8 +64,7 @@ lark-bot/
 │   ├── config_loader.go   # 配置加载器
 │   └── plugin_*.go        # 插件系统
 ├── conf/                   # 配置结构体定义
-├── config/                 # 配置文件
-│   └── openai.yaml        # OpenAI 配置模板
+├── config/                 # 配置文件目录
 └── plugins/                # 插件实现
     └── jenkins/           # Jenkins 插件
 ```
@@ -118,48 +115,32 @@ client := openai.NewOpenAIClient(&openai.OpenAIConfig{
 
 ## ⚙️ 配置方法
 
-### 1. 配置文件（推荐）
-
-`config/openai.yaml` 示例：
-```yaml
-openai:
-  api_key: "your-openai-api-key-here"
-  base_url: ""                    # 可选，用于代理或自定义服务
-  model: "gpt-4o-mini"
-  max_tokens: 4000
-  temperature: 0.7
-  timeout: "60s"
-  max_retries: 3
-
-system_prompt: |
-  你是一个有用的AI助手，专门帮助用户解答问题。
-  请用简洁、准确的方式回答问题。
-
-conversation:
-  max_history: 10
-  enable_context: true
-```
-
-### 2. 环境变量
+### 1. 环境变量（推荐）
 
 ```bash
-export LARK_BOT_OPENAI_API_KEY="sk-xxx"
+export LARK_BOT_OPENAI_API_KEY="your-openai-api-key-here"
 export LARK_BOT_OPENAI_MODEL="gpt-4o-mini"
 export LARK_BOT_OPENAI_MAX_TOKENS="4000"
 export LARK_BOT_OPENAI_TEMPERATURE="0.7"
+export LARK_BOT_OPENAI_TIMEOUT="60s"
+export LARK_BOT_OPENAI_MAX_RETRIES="3"
 ```
 
-### 3. 程序化配置
+### 2. 主配置文件
 
-```go
-config := &openai.OpenAIConfig{
-    APIKey:      os.Getenv("OPENAI_API_KEY"),
-    Model:       "gpt-4o-mini",
-    MaxTokens:   1000,
-    Temperature: 0.7,
-    Timeout:     30 * time.Second,
-    MaxRetries:  3,
-}
+在 `conf/config.yaml` 中配置：
+
+```yaml
+AI:
+  Provider: "openai"
+  APIKey: "your-openai-api-key-here"
+  BaseURL: ""                    # 可选，用于代理或自定义服务
+  Model: "gpt-4o-mini"
+  Options:
+    max_tokens: "4000"
+    temperature: "0.7"
+    timeout: "60s"
+    max_retries: "3"
 ```
 
 ## 🏃‍♂️ 运行与示例

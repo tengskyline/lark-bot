@@ -86,17 +86,11 @@ func streamingExample() {
 func configExample() {
 	fmt.Println("=== 配置管理示例 ===")
 
-	// 从文件加载配置
-	config, err := lark.LoadConfig("config/openai.yaml")
+	// 从环境变量加载配置
+	config, err := lark.LoadConfigFromEnv()
 	if err != nil {
-		fmt.Printf("从文件加载配置失败: %v\n", err)
-
-		// 尝试从环境变量加载
-		config, err = lark.LoadConfigFromEnv()
-		if err != nil {
-			fmt.Printf("从环境变量加载配置失败: %v\n", err)
-			return
-		}
+		fmt.Printf("从环境变量加载配置失败: %v\n", err)
+		return
 	}
 
 	fmt.Printf("配置信息: %+v\n", config.OpenAI)
@@ -136,13 +130,10 @@ func configExample() {
 func larkBotIntegrationExample() {
 	fmt.Println("=== Lark Bot 集成示例 ===")
 
-	// 加载配置
-	config, err := lark.LoadConfig("config/openai.yaml")
+	// 从环境变量加载配置
+	config, err := lark.LoadConfigFromEnv()
 	if err != nil {
-		config, err = lark.LoadConfigFromEnv()
-		if err != nil {
-			log.Fatalf("加载配置失败: %v", err)
-		}
+		log.Fatalf("加载配置失败: %v", err)
 	}
 
 	// 创建 OpenAI 客户端 - 转换配置类型
