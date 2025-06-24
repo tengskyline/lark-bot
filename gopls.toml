@@ -1,0 +1,64 @@
+# gopls configuration for lark-bot project
+
+[build]
+# Build flags for all builds
+buildFlags = []
+
+# Environment variables for builds  
+env = {}
+
+# Directory filters to exclude from analysis
+directoryFilters = ["-node_modules", "-vendor", "-.git"]
+
+[formatting]
+# Local import prefix
+local = "github.com/tengskyline/lark-bot"
+
+# Use gofumpt for formatting
+gofumpt = true
+
+[ui.completion]
+# Use placeholders in completions
+usePlaceholders = true
+
+# Enable deep completion
+experimentalPostfixCompletions = true
+
+[ui.diagnostic]
+# Enable staticcheck
+staticcheck = true
+
+# Enable all analyses
+analyses = {
+  fillstruct = true,
+  nonewvars = true,
+  undeclaredname = true,
+  unusedparams = true,
+  unusedwrite = true,
+  useany = true
+}
+
+[ui.documentation]
+# Show full documentation on hover
+hoverKind = "FullDocumentation"
+
+# Include links in documentation
+linksInHover = true
+
+[ui.navigation]
+# Import shortcut behavior
+importShortcut = "Both"
+
+# Symbol matcher
+symbolMatcher = "FastFuzzy"
+
+[ui.semanticTokens]
+# Enable semantic tokens
+enabled = true
+
+[experimental]
+# Enable experimental workspace module support
+workspaceModule = true
+
+# Enable template support
+templateSupport = true 

@@ -1,0 +1,84 @@
+# 飞书机器人配置文件示例
+# 复制此文件为 config.yaml 并填入实际配置信息
+# 支持环境变量覆盖，格式：LARK_BOT_APPID, LARK_BOT_APP_SECRET 等
+
+# 飞书应用基础配置
+AppId: "cli_xxxxxxxxxx"                    # 飞书应用ID
+AppSecret: "xxxxxxxxxxxxxxxxxxxx"          # 飞书应用密钥
+LogLevel: 2                                # 日志级别: 1=Debug, 2=Info, 3=Warn, 4=Error
+VerificationToken: "xxxxxxxxxxxxxxxx"      # 事件订阅验证Token
+EncryptKey: "xxxxxxxxxxxxxxxx"             # 事件订阅加密Key
+
+# AI 配置
+AI:
+  Provider: "qwen"                         # AI提供商: qwen, openai, claude
+  APIKey: "sk-xxxxxxxxxxxxxxxx"            # AI服务的API密钥
+  BaseURL: ""                              # 自定义API地址（可选，如私有部署）
+  Model: "qwen-turbo"                      # 模型名称
+  Options:                                 # 额外配置（可选）
+    temperature: "0.7"                     # 温度参数，控制回答的随机性
+    max_tokens: "2000"                     # 最大回答长度
+
+# 高并发处理配置
+Concurrency:
+  WorkerPoolSize: 10                       # 工作协程池大小（建议为CPU核心数的2倍）
+  QueueSize: 1000                          # 消息队列大小
+  MaxConcurrentAI: 5                       # AI 并发数限制
+  MaxConcurrentHTTP: 20                    # HTTP 并发数限制
+  TimeoutSeconds: 30                       # 处理超时时间（秒）
+
+# Jenkins 配置（可选）
+Jenkins:
+  BaseURL: "http://jenkins.example.com:8080"  # Jenkins服务器地址
+  Username: "admin"                            # Jenkins用户名
+  Token: "xxxxxxxxxxxxxxxxxxxxxxxx"           # Jenkins API Token
+  
+  # Jenkins关键字配置
+  Keywords:
+    # 触发Jenkins任务的关键字
+    TriggerKeywords:
+      - "打包"
+      - "后台"
+      - "构建"
+    
+    # 任务类型关键字映射
+    TaskTypes:
+      build: ["构建"]
+      gm: ["后台"]
+      package: ["打包"]
+    
+    # 分支关键字映射
+    Branches:
+      trunk: ["主干", "trunk"]
+      new: ["分支", "new"]
+    
+    # 标签关键字映射
+    Tags:
+      Y: ["Y"]
+      H: ["H"]
+      W: ["W"]
+    
+    # 版本关键字映射
+    Versions:
+      新马: "xinma"
+      xinma: "xinma"
+      东南亚: "xinma"
+      越南: "vn"
+      vn: "vn"
+      台湾: "tw"
+      tw: "tw"
+      港台: "tw"
+      韩国: "kr"
+      kr: "kr"
+    
+    # 更新类型关键字映射
+    UpdateTypes:
+      all: ["全部", "all"]
+      code: ["代码", "code"]
+      xml: ["配置", "xml"]
+
+# 监控配置（可选）
+Monitoring:
+  MetricsEnabled: true                     # 是否启用性能监控
+  MetricsInterval: 60                      # 监控数据输出间隔（秒）
+  LogMetrics: true                         # 是否在日志中输出监控数据

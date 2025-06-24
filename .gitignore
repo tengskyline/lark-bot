@@ -1,21 +1,61 @@
-# Go build output
-bin/
+# Binaries for programs and plugins
 *.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+larkbot
+
+# Test binary, built with `go test -c`
 *.test
+
+# Output of the go coverage tool
 *.out
 
-# Go workspace
-vendor/
-*.log
-*.swp
+# Go workspace files (本地开发用，不要提交)
+go.work
+go.work.sum
+.github/
 
-# IDE
+# Dependency directories
+vendor/
+
+# Go module cache
+go.sum.backup
+
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.editorconfig
 
-# OS files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-server.yaml
-.gitignore
 
+# Log files
+*.log
+
+# Config files (包含敏感信息)
+server.yaml
+config.yaml
+.env
+.env.local
+
+# 生产环境配置文件
+conf/config.yaml.prod
+conf/config.yaml.production
+conf/config.yaml.staging
+conf/config.yaml.test
+
+# Temporary files
+tmp/
+temp/
