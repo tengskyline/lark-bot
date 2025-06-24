@@ -52,20 +52,26 @@ func (jp *Plugin) Match(text string) bool {
 func (jp *Plugin) ParseJobs(text, messageId string) []lark.Job {
 	jobs := make([]lark.Job, 0)
 
-	// 使用配置化的任务类型关键字
+	// 然后检测任务类型关键字，只有同时匹配版本和任务类型才触发
 	for taskType, keywords := range jp.config.TaskTypes {
 		for _, keyword := range keywords {
-			if strings.Contains(text, keyword) {
-				switch taskType {
-				case "build":
-					jobs = append(jobs, jp.parseBuildJobs(text, messageId)...)
-				case "gm":
-					jobs = append(jobs, jp.parseGMJobs(text, messageId)...)
-				case "package":
-					jobs = append(jobs, jp.parsePackageJobs(text, messageId)...)
+			for versionKey, versionValue := range jp.config.Versions {
+				keyJob := versionKey + keyword
+				if strings.Contains(text, keyJob) {
+					fmt.Println("解析到 real job", keyJob)
+					// 同时匹配到版本和任务类型，才触发相应任务
+					switch taskType {
+					case "build":
+						jobs = append(jobs, jp.parseBuildJobs(text, messageId)...)
+					case "gm":
+						jobs = append(jobs, jp.parseGMJobs(versionValue, messageId)...)
+					case "package":
+						jobs = append(jobs, jp.parsePackageJobs(versionValue, jp.getUpdateType(text), messageId)...)
+					}
 				}
-				break
+
 			}
+
 		}
 	}
 
@@ -73,15 +79,6 @@ func (jp *Plugin) ParseJobs(text, messageId string) []lark.Job {
 }
 
 func (jp *Plugin) ExecuteJob(ctx context.Context, job lark.Job, client *http.Client) error {
-	fmt.Println("ExecuteJob", job.URL)
-	fmt.Println("ExecuteJob", job.Method)
-	fmt.Println("ExecuteJob", job.Body)
-	fmt.Println("ExecuteJob", job.Auth)
-	fmt.Println("ExecuteJob", job.Headers)
-	fmt.Println("ExecuteJob", job.Metadata)
-	fmt.Println("ExecuteJob", job.ID)
-	fmt.Println("ExecuteJob", job.Name)
-
 
 	req, err := http.NewRequestWithContext(ctx, job.Method, job.URL, strings.NewReader(job.Body))
 	if err != nil {
@@ -181,54 +178,32 @@ func (jp *Plugin) parseBuildJobs(text, messageId string) []lark.Job {
 }
 
 // 解析后台任务
-func (jp *Plugin) parseGMJobs(text, messageId string) []lark.Job {
+func (jp *Plugin) parseGMJobs(version, messageId string) []lark.Job {
 	jobs := make([]lark.Job, 0)
 
-	// 使用配置化的版本关键字映射
-	versions := make([]string, 0)
-	for key, value := range jp.config.Versions {
-		if strings.Contains(text, key) {
-			versions = append(versions, value)
-		}
-	}
+	jobURL := fmt.Sprintf("%s/job/build_online_gm_patch/buildWithParameters?token=hgame&branch=new&messageId=%s&version=%s",
+		jp.BaseURL, messageId, version)
 
-	for _, version := range versions {
-		jobURL := fmt.Sprintf("%s/job/build_online_gm_patch/buildWithParameters?token=hgame&branch=new&messageId=%s&version=%s",
-			jp.BaseURL, messageId, version)
-
-		job := lark.Job{
-			ID:     fmt.Sprintf("gm_%s", version),
-			Name:   fmt.Sprintf("后台任务 - %s", version),
-			URL:    jobURL,
-			Method: "POST",
-			Auth: &lark.JobAuth{
-				Type:     "basic",
-				Username: jp.Username,
-				Password: jp.Token, // 使用 Password 字段而不是 Token
-			},
-			Metadata: map[string]string{
-				"type":    "gm",
-				"version": version,
-			},
-		}
-		jobs = append(jobs, job)
+	job := lark.Job{
+		ID:     fmt.Sprintf("gm_%s", version),
+		Name:   fmt.Sprintf("后台任务 - %s", version),
+		URL:    jobURL,
+		Method: "POST",
+		Auth: &lark.JobAuth{
+			Type:     "basic",
+			Username: jp.Username,
+			Password: jp.Token, // 使用 Password 字段而不是 Token
+		},
+		Metadata: map[string]string{
+			"type":    "gm",
+			"version": version,
+		},
 	}
+	jobs = append(jobs, job)
 
 	return jobs
 }
-
-// 解析打包任务
-func (jp *Plugin) parsePackageJobs(text, messageId string) []lark.Job {
-	jobs := make([]lark.Job, 0)
-
-	// 使用配置化的版本关键字映射
-	versions := make([]string, 0)
-	for key, value := range jp.config.Versions {
-		if strings.Contains(text, key) {
-			versions = append(versions, value)
-		}
-	}
-
+func (jp *Plugin) getUpdateType(text string) string {
 	// 使用配置化的更新类型关键字
 	updateType := "all"
 	for updateTypeKey, keywords := range jp.config.UpdateTypes {
@@ -238,33 +213,35 @@ func (jp *Plugin) parsePackageJobs(text, messageId string) []lark.Job {
 				break
 			}
 		}
-		if updateType != "all" {
-			break
-		}
+
 	}
+	return updateType
+}
 
-	for _, version := range versions {
-		jobURL := fmt.Sprintf("%s/job/build_online_server_patch/buildWithParameters?token=hgame&branch=new&messageId=%s&version=%s&updateType=%s",
-			jp.BaseURL, messageId, version, updateType)
+// 解析打包任务
 
-		job := lark.Job{
-			ID:     fmt.Sprintf("package_%s_%s", version, updateType),
-			Name:   fmt.Sprintf("打包任务 - %s - %s", version, updateType),
-			URL:    jobURL,
-			Method: "POST",
-			Auth: &lark.JobAuth{
-				Type:     "basic",
-				Username: jp.Username,
-				Password: jp.Token, // 使用 Password 字段而不是 Token
-			},
-			Metadata: map[string]string{
-				"type":       "package",
-				"version":    version,
-				"updateType": updateType,
-			},
-		}
-		jobs = append(jobs, job)
+func (jp *Plugin) parsePackageJobs(version, updateType, messageId string) []lark.Job {
+	jobs := make([]lark.Job, 0)
+
+	jobURL := fmt.Sprintf("%s/job/build_online_server_patch/buildWithParameters?token=hgame&branch=new&messageId=%s&version=%s&updateType=%s",
+		jp.BaseURL, messageId, version, updateType)
+
+	job := lark.Job{
+		ID:     fmt.Sprintf("package_%s_%s", version, updateType),
+		Name:   fmt.Sprintf("打包任务 - %s - %s", version, updateType),
+		URL:    jobURL,
+		Method: "POST",
+		Auth: &lark.JobAuth{
+			Type:     "basic",
+			Username: jp.Username,
+			Password: jp.Token, // 使用 Password 字段而不是 Token
+		},
+		Metadata: map[string]string{
+			"type":       "package",
+			"version":    version,
+			"updateType": updateType,
+		},
 	}
-
+	jobs = append(jobs, job)
 	return jobs
 }

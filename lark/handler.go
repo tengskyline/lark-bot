@@ -386,36 +386,41 @@ func (h *LarkHandler) handleJenkinsRequest(ctx context.Context, event *larkim.P2
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+	// 创建卡片
+	cardId := h.Bot.CreateNewCard(ctx)
+	if cardId == "" {
+		return fmt.Errorf("failed to create card")
+	}
 
-	messageId := *event.Event.Message.MessageId
+	// 发送卡片消息
+	err := h.SendMessage(event, larkim.MsgTypeInteractive, cardId)
+	if err != nil {
+		return err
+	}
 
 	// 异步处理 Jenkins 构建
-	go h.processJenkinsRequest(context.Background(), event, reqText, messageId)
+	go h.processJenkinsRequest(context.Background(), event, reqText, cardId)
 
 	return nil
 }
 
-func (h *LarkHandler) processJenkinsRequest(ctx context.Context, event *larkim.P2MessageReceiveV1, reqText, messageId string) {
-	msg := h.buildJenkinsJobs(ctx, reqText, messageId)
-
-	if len(msg) == 0 {
-		h.SendMessage(event, larkim.MsgTypeImage, "img_v3_02mg_99f3af0f-c955-42d4-9804-84ff9e186bcg")
-	} else {
-		h.SendMessage(event, larkim.MsgTypeText, msg)
-	}
+func (h *LarkHandler) processJenkinsRequest(ctx context.Context, event *larkim.P2MessageReceiveV1, reqText, cardId string) {
+	msg := h.buildJenkinsJobs(ctx, reqText, *event.Event.Message.MessageId)
+	// 更新卡片内容
+	h.Bot.UpdateCardChat(ctx, cardId, msg)
 }
 
-func (h *LarkHandler) buildJenkinsJobs(ctx context.Context, reqText, messageId string) string {
+func (h *LarkHandler) buildJenkinsJobs(ctx context.Context, reqText, messageId string) []string {
 	// 查找匹配的插件
 	plugin := h.pluginManager.FindPlugin(reqText)
 	if plugin == nil {
-		return "没有找到匹配的插件"
+		return []string{"没有找到匹配的插件"}
 	}
 
 	// 解析任务
 	jobs := plugin.ParseJobs(reqText, messageId)
 	if len(jobs) == 0 {
-		return "没有找到需要构建的任务"
+		return []string{"没有找到需要构建的任务"}
 	}
 
 	fmt.Printf("使用插件: %s, 解析到 %d 个任务\n", plugin.Name(), len(jobs))
@@ -451,12 +456,13 @@ func (h *LarkHandler) buildJenkinsJobs(ctx context.Context, reqText, messageId s
 			successCount++
 		}
 	}
-
-	if len(errors) > 0 {
-		return fmt.Sprintf("任务执行完成: 成功 %d/%d, 失败 %d 个", successCount, len(jobs), len(errors))
+	msg := make([]string, 0, len(jobs))
+	msg = append(msg, fmt.Sprintf("开始解析任务...\n"))
+	for _, job := range jobs {
+		msg = append(msg, fmt.Sprintf("解析到任务: %s \n", job.Name))
 	}
-
-	return ""
+	msg = append(msg, fmt.Sprintf("以上任务开始构建: 成功 %d/%d, 失败 %d 个\n", successCount, len(jobs), len(errors)))
+	return msg
 }
 
 // 添加插件管理方法
