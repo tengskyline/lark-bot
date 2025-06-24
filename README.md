@@ -265,14 +265,6 @@ openai:
 - 启用自动重试机制
 - 使用指数退避策略
 
-## 🤝 贡献指南
-
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
-
 ## 📄 License
 
 MIT License - 详见 [LICENSE](LICENSE) 文件
