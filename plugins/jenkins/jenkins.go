@@ -73,6 +73,16 @@ func (jp *Plugin) ParseJobs(text, messageId string) []lark.Job {
 }
 
 func (jp *Plugin) ExecuteJob(ctx context.Context, job lark.Job, client *http.Client) error {
+	fmt.Println("ExecuteJob", job.URL)
+	fmt.Println("ExecuteJob", job.Method)
+	fmt.Println("ExecuteJob", job.Body)
+	fmt.Println("ExecuteJob", job.Auth)
+	fmt.Println("ExecuteJob", job.Headers)
+	fmt.Println("ExecuteJob", job.Metadata)
+	fmt.Println("ExecuteJob", job.ID)
+	fmt.Println("ExecuteJob", job.Name)
+
+
 	req, err := http.NewRequestWithContext(ctx, job.Method, job.URL, strings.NewReader(job.Body))
 	if err != nil {
 		return fmt.Errorf("创建请求失败: %v", err)
@@ -88,7 +98,7 @@ func (jp *Plugin) ExecuteJob(ctx context.Context, job lark.Job, client *http.Cli
 		}
 	}
 
-	// 设置头部
+	// 设置其他头部
 	for key, value := range job.Headers {
 		req.Header.Set(key, value)
 	}
@@ -154,9 +164,9 @@ func (jp *Plugin) parseBuildJobs(text, messageId string) []lark.Job {
 			URL:    jobURL,
 			Method: "POST",
 			Auth: &lark.JobAuth{
-				Type:     "token",
+				Type:     "basic",
 				Username: jp.Username,
-				Token:    jp.Token,
+				Password: jp.Token, // 使用 Password 字段而不是 Token
 			},
 			Metadata: map[string]string{
 				"type":   "build",
@@ -192,9 +202,9 @@ func (jp *Plugin) parseGMJobs(text, messageId string) []lark.Job {
 			URL:    jobURL,
 			Method: "POST",
 			Auth: &lark.JobAuth{
-				Type:     "token",
+				Type:     "basic",
 				Username: jp.Username,
-				Token:    jp.Token,
+				Password: jp.Token, // 使用 Password 字段而不是 Token
 			},
 			Metadata: map[string]string{
 				"type":    "gm",
@@ -243,9 +253,9 @@ func (jp *Plugin) parsePackageJobs(text, messageId string) []lark.Job {
 			URL:    jobURL,
 			Method: "POST",
 			Auth: &lark.JobAuth{
-				Type:     "token",
+				Type:     "basic",
 				Username: jp.Username,
-				Token:    jp.Token,
+				Password: jp.Token, // 使用 Password 字段而不是 Token
 			},
 			Metadata: map[string]string{
 				"type":       "package",
