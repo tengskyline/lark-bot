@@ -54,24 +54,28 @@ func (jp *Plugin) ParseJobs(text, messageId string) []lark.Job {
 
 	// 然后检测任务类型关键字，只有同时匹配版本和任务类型才触发
 	for taskType, keywords := range jp.config.TaskTypes {
-		for _, keyword := range keywords {
-			for versionKey, versionValue := range jp.config.Versions {
-				keyJob := versionKey + keyword
-				if strings.Contains(text, keyJob) {
-					fmt.Println("解析到 real job", keyJob)
-					// 同时匹配到版本和任务类型，才触发相应任务
-					switch taskType {
-					case "build":
-						jobs = append(jobs, jp.parseBuildJobs(text, messageId)...)
-					case "gm":
-						jobs = append(jobs, jp.parseGMJobs(versionValue, messageId)...)
-					case "package":
-						jobs = append(jobs, jp.parsePackageJobs(versionValue, jp.getUpdateType(text), messageId)...)
+		if taskType == "build" {
+			jobs = append(jobs, jp.parseBuildJobs(text, messageId)...)
+		} else if taskType == "hgame" {
+			jobs = append(jobs, jp.parseHgameBuildJobs(text, messageId)...)
+		} else {
+			for _, keyword := range keywords {
+				for versionKey, versionValue := range jp.config.Versions {
+					keyJob := versionKey + keyword
+					if strings.Contains(text, keyJob) {
+						fmt.Println("解析到 real job", keyJob)
+						// 同时匹配到版本和任务类型，才触发相应任务
+						switch taskType {
+						case "gm":
+							jobs = append(jobs, jp.parseGMJobs(versionValue, messageId)...)
+						case "package":
+							jobs = append(jobs, jp.parsePackageJobs(versionValue, jp.getUpdateType(text), messageId)...)
+						}
 					}
+
 				}
 
 			}
-
 		}
 	}
 
@@ -142,7 +146,7 @@ func (jp *Plugin) parseBuildJobs(text, messageId string) []lark.Job {
 	for tagKey, keywords := range jp.config.Tags {
 		for _, keyword := range keywords {
 			if strings.Contains(text, keyword) {
-				tag = tagKey
+				tag = strings.ToUpper(tagKey) // 确保 tag 始终为大写
 				break
 			}
 		}
@@ -173,6 +177,53 @@ func (jp *Plugin) parseBuildJobs(text, messageId string) []lark.Job {
 		}
 		jobs = append(jobs, job)
 	}
+
+	return jobs
+}
+
+// 解析HGAME任务：构建 op=update，清档 op=clear
+func (jp *Plugin) parseHgameBuildJobs(text, messageId string) []lark.Job {
+	jobs := make([]lark.Job, 0)
+
+	var tag, op string
+	switch {
+	case strings.Contains(text, "外网") || strings.Contains(text, "阿里") || strings.Contains(text, "ali"):
+		tag = "ali"
+	case strings.Contains(text, "集群"):
+		tag = "cluster"
+	case strings.Contains(text, "时间"):
+		tag = "time"
+	default:
+		return jobs
+	}
+	switch {
+	case strings.Contains(text, "清档"):
+		op = "clear"
+	case strings.Contains(text, "构建"):
+		op = "update"
+	default:
+		return jobs
+	}
+
+	jobURL := fmt.Sprintf("%s/job/build_hgame_server/buildWithParameters?token=hgame&messageId=%s&op=%s&tag=%s",
+		jp.BaseURL, messageId, op, tag)
+
+	job := lark.Job{
+		ID:     fmt.Sprintf("build_hgame_server_%s_%s", op, tag),
+		Name:   fmt.Sprintf("HGAME任务 - %s - %s", op, tag),
+		URL:    jobURL,
+		Method: "POST",
+		Auth: &lark.JobAuth{
+			Type:     "basic",
+			Username: jp.Username,
+			Password: jp.Token,
+		},
+		Metadata: map[string]string{
+			"type": "hgame",
+			"op":   op,
+		},
+	}
+	jobs = append(jobs, job)
 
 	return jobs
 }

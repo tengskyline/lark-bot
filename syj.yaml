@@ -1,0 +1,88 @@
+# 飞书机器人配置文件示例
+# 复制此文件为 config.yaml 并填入实际配置信息
+# 支持环境变量覆盖，格式：LARK_BOT_APPID, LARK_BOT_APP_SECRET 等
+
+# 飞书应用基础配置
+AppId: "cli_a4f3fb778f7c900d"                    # 飞书应用ID
+AppSecret: "nUcykGa864Gdnm9qNDGGGcP77nq0NRtg"          # 飞书应用密钥
+LogLevel: 2                                # 日志级别: 1=Debug, 2=Info, 3=Warn, 4=Error
+VerificationToken: ""      # 事件订阅验证Token
+EncryptKey: ""             # 事件订阅加密Key
+
+# AI 配置
+AI:
+  Provider: "qwen"                         # AI提供商: qwen, openai, claude
+  APIKey: "sk-80fc1a3fabb94d01a1bee512064f7ae7"            # AI服务的API密钥
+  BaseURL: ""                              # 自定义API地址（可选，如私有部署）
+  Model: "qwen-turbo"                      # 模型名称
+  Options:                                 # 额外配置（可选）
+    temperature: "0.7"                     # 温度参数，控制回答的随机性
+    max_tokens: "2000"                     # 最大回答长度
+
+# 高并发处理配置
+Concurrency:
+  WorkerPoolSize: 10                       # 工作协程池大小（建议为CPU核心数的2倍）
+  QueueSize: 1000                          # 消息队列大小
+  MaxConcurrentAI: 5                       # AI 并发数限制
+  MaxConcurrentHTTP: 20                    # HTTP 并发数限制
+  TimeoutSeconds: 30                       # 处理超时时间（秒）
+
+# Jenkins 配置（可选）
+Jenkins:
+  BaseURL: "http://192.168.100.3:8080"  # Jenkins服务器地址
+  Username: "mango"                            # Jenkins用户名
+  Token: "1191516ebf4732b878f1bbfb276d39a9c6"           # Jenkins API Token
+  
+  # Jenkins关键字配置
+  Keywords:
+    # 触发Jenkins任务的关键字
+    TriggerKeywords:
+      - "打包"
+      - "后台"
+      - "构建"
+    
+    # 任务类型关键字映射
+    TaskTypes:
+      build: ["构建"]
+      gm: ["后台"]
+      package: ["打包"]
+    
+    # 分支关键字映射
+    Branches:
+      trunk: ["主干", "trunk"]
+      new: ["分支", "new"]
+    
+    # 标签关键字映射
+    Tags:
+      Y: ["吴志阳"]
+      H: ["阿房"]
+      W: ["潘浩哲"]
+    
+    # 版本关键字映射
+    Versions:
+      新马: "xinma"
+      xinma: "xinma"
+      东南亚: "xinma"
+      游族: "uuzu"
+      国内: "uuzu"
+      国服: "uuzu"
+      uuzu: "uuzu"
+      越南: "vn"
+      vn: "vn"
+      台湾: "tw"
+      tw: "tw"
+      港台: "tw"
+      韩国: "kr"
+      kr: "kr"
+    
+    # 更新类型关键字映射
+    UpdateTypes:
+      all: ["全部", "all"]
+      code: ["代码", "code"]
+      xml: ["配置", "xml"]
+
+# 监控配置（可选）
+Monitoring:
+  MetricsEnabled: true                     # 是否启用性能监控
+  MetricsInterval: 60                      # 监控数据输出间隔（秒）
+  LogMetrics: true                         # 是否在日志中输出监控数据

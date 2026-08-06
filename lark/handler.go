@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -373,7 +374,7 @@ func (h *LarkHandler) processAIChat(ctx context.Context, cardId, reqText string)
 		h.Bot.UpdateCardChat(ctx, cardId, []string{fmt.Sprintf("AI对话失败: %v", err)})
 		return
 	}
-
+	responseChunks = ReplaceQwenNameIfMatched(responseChunks)
 	// 更新卡片内容
 	h.Bot.UpdateCardChat(ctx, cardId, responseChunks)
 }
@@ -506,4 +507,49 @@ func (h *LarkHandler) Shutdown() {
 	h.cancel()
 	h.wg.Wait()
 	fmt.Println("Handler shutdown completed")
+}
+
+func ReplaceQwenNameIfMatched(chunks []string) []string {
+	joined := strings.Join(chunks, "")
+	keywords := []string{"通义千问", "阿里巴巴", "阿里", "通义", "qwen", "Qwen"}
+
+	// 是否匹配关键词
+	matched := false
+	for _, kw := range keywords {
+		if strings.Contains(joined, kw) {
+			matched = true
+			break
+		}
+	}
+
+	if !matched {
+		// 没有敏感词，原样返回
+		return chunks
+	}
+
+	// 替换关键词
+	replacer := strings.NewReplacer(
+		"通义千问", "ShitGPT",
+		"qwen", "ShitGPT",
+		"Qwen", "ShitGPT",
+		"阿里巴巴", "诗与剑",
+		"阿里", "诗与剑",
+		"通义实验室", "云梦录工作室",
+		"Alibaba ", "shit",
+	)
+
+	replaced := replacer.Replace(joined)
+
+	// 拆分回数组：可以按原始片段长度（不变），或者统一每N字分一段
+	const chunkSize = 20
+	var result []string
+	for i := 0; i < len(replaced); i += chunkSize {
+		end := i + chunkSize
+		if end > len(replaced) {
+			end = len(replaced)
+		}
+		result = append(result, replaced[i:end])
+	}
+
+	return result
 }

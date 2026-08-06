@@ -10,7 +10,7 @@ type AIClient interface {
 	Name() string
 
 	// 流式对话
-	Chat(prompt string ) ([]string, error)
+	Chat(prompt string) ([]string, error)
 
 	// 简单对话（一次性返回完整结果）
 	SimpleChat(ctx context.Context, prompt string) (string, error)
