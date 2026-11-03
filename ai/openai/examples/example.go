@@ -79,7 +79,7 @@ func streamingExample() {
 	for i, chunk := range chunks {
 		fmt.Printf("[%d] %s", i+1, chunk)
 	}
-	fmt.Println("\n")
+	fmt.Println()
 }
 
 // 配置管理示例

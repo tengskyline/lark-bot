@@ -128,7 +128,7 @@ export LARK_BOT_OPENAI_MAX_RETRIES="3"
 
 ### 2. 主配置文件
 
-在 `conf/config.yaml` 中配置：
+在 `server.yml` 中配置：
 
 ```yaml
 AI:
@@ -144,6 +144,21 @@ AI:
 ```
 
 ## 🏃‍♂️ 运行与示例
+
+### 鬼灭补丁构建
+
+在飞书中按照“任务、分支、更新范围”的顺序发送命令：
+
+```text
+鬼灭服务端主干代码
+鬼灭服务端分支配置
+鬼灭后台主干全部
+鬼灭后台分支代码
+鬼灭服务端
+鬼灭后台代码
+```
+
+“主干/分支”对应 `trunk/new`，不填写时默认 `new`；“全部/代码/配置”对应 `all/code/xml`，不填写时默认 `all`。同时填写多个分支或多个更新范围时不会触发 Jenkins 任务。
 
 ### 运行主程序
 
@@ -268,6 +283,4 @@ openai:
 ## 📄 License
 
 MIT License - 详见 [LICENSE](LICENSE) 文件
-
-
 

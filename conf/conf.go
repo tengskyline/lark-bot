@@ -69,23 +69,9 @@ var GlobalConfig *LarkBotConfig = &LarkBotConfig{}
 
 // 初始化配置
 func ConfigInit(configPath string) error {
-	// 设置配置文件路径和名称
+	// 指定配置文件时直接使用完整路径，同时兼容 .yaml 和 .yml 后缀。
 	if configPath != "" {
-		// 如果指定了完整路径，解析路径和文件名
-		lastSlash := strings.LastIndex(configPath, "/")
-		if lastSlash != -1 {
-			viper.AddConfigPath(configPath[:lastSlash])
-			fileName := configPath[lastSlash+1:]
-			// 去掉扩展名
-			if dotIndex := strings.LastIndex(fileName, "."); dotIndex != -1 {
-				viper.SetConfigName(fileName[:dotIndex])
-			} else {
-				viper.SetConfigName(fileName)
-			}
-		} else {
-			viper.SetConfigName(strings.TrimSuffix(configPath, ".yaml"))
-			viper.AddConfigPath(".")
-		}
+		viper.SetConfigFile(configPath)
 	} else {
 		// 默认配置
 		viper.SetConfigName("config")
@@ -136,11 +122,13 @@ func setDefaults() {
 	viper.SetDefault("AI.Model", "qwen-turbo")
 
 	// Jenkins配置默认值
-	viper.SetDefault("Jenkins.Keywords.TriggerKeywords", []string{"打包", "后台", "构建"})
+	viper.SetDefault("Jenkins.Keywords.TriggerKeywords", []string{"打包", "后台", "构建", "鬼灭服务端", "鬼灭后台"})
 	viper.SetDefault("Jenkins.Keywords.TaskTypes", map[string][]string{
-		"build":   {"构建"},
-		"gm":      {"后台"},
-		"package": {"打包"},
+		"build":      {"构建"},
+		"gm":         {"后台"},
+		"package":    {"打包"},
+		"gmt_server": {"鬼灭服务端"},
+		"gmt_gm":     {"鬼灭后台"},
 	})
 	viper.SetDefault("Jenkins.Keywords.Branches", map[string][]string{
 		"trunk": {"主干", "trunk"},

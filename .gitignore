@@ -46,6 +46,7 @@ Thumbs.db
 
 # Config files (包含敏感信息)
 server.yaml
+server.yml
 config.yaml
 .env
 .env.local

@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	configFile := flag.String("c", "conf/config.yaml", "default conf/config.yaml")
+	configFile := flag.String("c", "server.yml", "default server.yml")
 	flag.Parse()
 
 	fmt.Printf("启动 Lark Bot (高并发模式)...\n")

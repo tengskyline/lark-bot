@@ -5,12 +5,11 @@
 ## 📁 文件结构
 
 ```
-conf/
-├── config.yaml.local    # 示例配置文件（提交到Git）
-├── config.yaml          # 启动配置文件（不提交到Git）
-├── config.yaml.prod     # 生产环境配置（不提交到Git）
-├── config.yaml.staging  # 测试环境配置（不提交到Git）
-└── README.md            # 本说明文件
+lark-bot/
+├── server.yml               # 启动配置文件（不提交到Git）
+└── conf/
+    ├── config.yaml.local    # 示例配置文件（提交到Git）
+    └── README.md            # 本说明文件
 ```
 
 ## 🔧 配置文件说明
@@ -21,7 +20,7 @@ conf/
 - **内容**: 脱敏的示例值和详细注释
 - **作用**: 作为配置模板，供开发者参考
 
-### config.yaml
+### server.yml
 - **用途**: 启动配置文件，包含实际的配置值
 - **版本控制**: ❌ 不提交到Git（已在.gitignore中）
 - **内容**: 实际的配置值，包含敏感信息
@@ -38,11 +37,11 @@ conf/
 ### 1. 创建启动配置
 
 ```bash
-# 复制示例配置
-cp config.yaml.local config.yaml
+# 在项目根目录复制示例配置
+cp conf/config.yaml.local server.yml
 
 # 编辑配置文件，填入实际值
-vim config.yaml
+vim server.yml
 ```
 
 ### 2. 必填配置项
@@ -69,13 +68,13 @@ AI:
 go run .
 
 # 或指定配置文件
-go run . -c conf/config.yaml
+go run . -c server.yml
 ```
 
 ## 🔐 安全注意事项
 
 1. **敏感信息保护**
-   - `config.yaml` 包含实际配置值，已添加到`.gitignore`
+   - `server.yml` 包含实际配置值，已添加到`.gitignore`
    - 不要将包含敏感信息的配置文件提交到版本控制
 
 2. **生产环境部署**
@@ -108,9 +107,9 @@ export LARK_BOT_AI_PROVIDER="qwen"
 
 ### 配置文件找不到
 ```bash
-Error: config file not found: conf/config.yaml
+Error: config file not found: server.yml
 ```
-**解决方案**: 复制示例配置文件 `cp config.yaml.local config.yaml`
+**解决方案**: 在项目根目录执行 `cp conf/config.yaml.local server.yml`
 
 ### 配置验证失败
 ```bash
@@ -122,4 +121,4 @@ Error: required config item AppId is not set
 ```bash
 Error: permission denied reading config file
 ```
-**解决方案**: 检查配置文件的读取权限 `chmod 644 config.yaml` 
+**解决方案**: 检查配置文件的读取权限 `chmod 644 server.yml`

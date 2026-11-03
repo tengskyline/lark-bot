@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/tengskyline/lark-bot/conf"
@@ -50,6 +51,11 @@ func (jp *Plugin) Match(text string) bool {
 }
 
 func (jp *Plugin) ParseJobs(text, messageId string) []lark.Job {
+	// 鬼灭补丁任务不依赖地区版本，优先独立解析，避免被旧后台任务重复匹配。
+	if jobs := jp.parseGMTPatchJobs(text, messageId); len(jobs) > 0 {
+		return jobs
+	}
+
 	jobs := make([]lark.Job, 0)
 
 	// 然后检测任务类型关键字，只有同时匹配版本和任务类型才触发
@@ -80,6 +86,88 @@ func (jp *Plugin) ParseJobs(text, messageId string) []lark.Job {
 	}
 
 	return jobs
+}
+
+// parseGMTPatchJobs 解析鬼灭服务端和后台补丁任务。
+func (jp *Plugin) parseGMTPatchJobs(text, messageId string) []lark.Job {
+	serverMatched := jp.matchTaskType(text, "gmt_server")
+	gmMatched := jp.matchTaskType(text, "gmt_gm")
+	if serverMatched == gmMatched {
+		return nil
+	}
+
+	branch, ok := matchMappedValue(text, jp.config.Branches, "new")
+	if !ok {
+		return nil
+	}
+
+	updateType, ok := matchMappedValue(text, jp.config.UpdateTypes, "all")
+	if !ok {
+		return nil
+	}
+
+	taskType := "gmt_server"
+	jobName := "build_gmt_server_patch"
+	displayName := "鬼灭服务端补丁"
+	if gmMatched {
+		taskType = "gmt_gm"
+		jobName = "build_gmt_gm_patch"
+		displayName = "鬼灭后台补丁"
+	}
+
+	parameters := url.Values{}
+	parameters.Set("token", "hgame")
+	parameters.Set("branch", branch)
+	parameters.Set("updateType", updateType)
+	parameters.Set("messageId", messageId)
+
+	job := lark.Job{
+		ID:   fmt.Sprintf("%s_%s_%s", taskType, branch, updateType),
+		Name: fmt.Sprintf("%s - %s - %s", displayName, branch, updateType),
+		URL: fmt.Sprintf("%s/job/%s/buildWithParameters?%s",
+			strings.TrimRight(jp.BaseURL, "/"), jobName, parameters.Encode()),
+		Method: "POST",
+		Auth: &lark.JobAuth{
+			Type:     "basic",
+			Username: jp.Username,
+			Password: jp.Token,
+		},
+		Metadata: map[string]string{
+			"type":       taskType,
+			"branch":     branch,
+			"updateType": updateType,
+		},
+	}
+
+	return []lark.Job{job}
+}
+
+func (jp *Plugin) matchTaskType(text, taskType string) bool {
+	for _, keyword := range jp.config.TaskTypes[taskType] {
+		if strings.Contains(text, keyword) {
+			return true
+		}
+	}
+	return false
+}
+
+// matchMappedValue 未匹配时返回默认值，同时拒绝包含多个不同配置值的含糊命令。
+func matchMappedValue(text string, configuredValues map[string][]string, defaultValue string) (string, bool) {
+	matchedValue := defaultValue
+	matched := false
+	for value, keywords := range configuredValues {
+		for _, keyword := range keywords {
+			if !strings.Contains(text, keyword) {
+				continue
+			}
+			if matched && matchedValue != value {
+				return "", false
+			}
+			matchedValue = value
+			matched = true
+		}
+	}
+	return matchedValue, true
 }
 
 func (jp *Plugin) ExecuteJob(ctx context.Context, job lark.Job, client *http.Client) error {

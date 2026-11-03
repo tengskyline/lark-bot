@@ -1,5 +1,5 @@
 # 飞书机器人配置文件示例
-# 复制此文件为 config.yaml 并填入实际配置信息
+# 复制此文件为 server.yml 并填入实际配置信息
 # 支持环境变量覆盖，格式：LARK_BOT_APPID, LARK_BOT_APP_SECRET 等
 
 # 飞书应用基础配置
@@ -40,12 +40,16 @@ Jenkins:
       - "打包"
       - "后台"
       - "构建"
+      - "鬼灭服务端"
+      - "鬼灭后台"
     
     # 任务类型关键字映射
     TaskTypes:
       build: ["构建"]
       gm: ["后台"]
       package: ["打包"]
+      gmt_server: ["鬼灭服务端"]
+      gmt_gm: ["鬼灭后台"]
     
     # 分支关键字映射
     Branches:

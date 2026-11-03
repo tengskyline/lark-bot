@@ -5,15 +5,19 @@
 
 set -e
 
+lark_bot_script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+lark_bot_project_root=$(cd -- "$lark_bot_script_dir/.." && pwd)
+cd -- "$lark_bot_project_root"
+
 echo "🚀 设置 Lark-Bot 开发环境..."
 
 # 检查 Go 版本
 echo "📋 检查 Go 版本..."
 go version
 
-# 检查是否在正确的目录
+# 检查脚本定位到的项目根目录
 if [ ! -f "go.mod" ]; then
-    echo "❌ 错误：请在项目根目录运行此脚本"
+    echo "❌ 错误：脚本所在项目缺少 go.mod"
     exit 1
 fi
 
@@ -27,11 +31,11 @@ else
 fi
 
 # 设置配置文件
-if [ ! -f "conf/config.yaml" ]; then
+if [ ! -f "server.yml" ]; then
     echo "📋 创建启动配置文件..."
-    cp conf/config.yaml.local conf/config.yaml
-    echo "✅ 已创建 conf/config.yaml"
-    echo "⚠️  请编辑 conf/config.yaml 并填入实际的配置值"
+    cp conf/config.yaml.local server.yml
+    echo "✅ 已创建 server.yml"
+    echo "⚠️  请编辑 server.yml 并填入实际的配置值"
 else
     echo "✅ 启动配置文件已存在"
 fi
@@ -53,16 +57,16 @@ echo "🎉 开发环境设置完成！"
 echo ""
 echo "📚 常用命令："
 echo "  go run .                              # 使用启动配置运行"
-echo "  go run . -c conf/config.yaml          # 指定配置文件运行"
-echo "  go build .                            # 构建程序" 
+echo "  go run . -c server.yml                # 指定配置文件运行"
+echo "  go build .                            # 构建程序"
 echo "  go test ./...                         # 运行测试"
 echo "  go work sync                          # 同步工作区"
 echo ""
 echo "📝 配置相关："
-echo "  vim conf/config.yaml                  # 编辑启动配置"
+echo "  vim server.yml                        # 编辑启动配置"
 echo "  cat conf/config.yaml.local            # 查看示例配置"
 echo ""
 echo "💡 提示："
 echo "  - go.work 文件仅用于本地开发，不会提交到版本控制"
-echo "  - config.yaml 包含敏感信息，不会提交到版本控制"
-echo "  - 请确保填写正确的飞书应用配置和AI API密钥" 
+echo "  - server.yml 包含敏感信息，不会提交到版本控制"
+echo "  - 请确保填写正确的飞书应用配置和AI API密钥"
